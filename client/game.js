@@ -1,28 +1,30 @@
-// ==============================
-// GAME STATE
-// ==============================
+import {
+  drawRoad,
+  updateRoad,
+  spawnTraffic,
+  drawTraffic,
+  updateTraffic,
+  resetRoad,
+} from "./road.js";
+
 const gameState = {
-  screen: "MENU", // MENU, PLAYING, GAMEOVER
-  speed: 3, // road scroll speed
-  score: 0, // current score
-  bestScore: 0, // best score from localStorage
-  isPaused: false, // pause toggle
+  screen: "MENU", 
+  speed: 3,
+  score: 0, 
+  bestScore: 0, 
+  isPaused: false, 
 };
 
-// ==============================
-// PLAYER CAR
-// ==============================
+
 const player = {
-  x: 175, // starting x position (center lane)
-  y: 550, // starting y position (bottom area)
+  x: 175,
+  y: 550, 
   width: 50,
   height: 100,
-  speed: 5, // how fast player moves left/right
+  speed: 5, 
 };
 
-// ==============================
-// ASSETS (images)
-// ==============================
+
 const assets = {};
 
 function loadAssets() {
@@ -33,22 +35,16 @@ function loadAssets() {
   assets.enemyCar.src = "../assets/enemy_car.png";
 }
 
-// ==============================
-// CANVAS SETUP
-// ==============================
+
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-// ==============================
-// LOAD BEST SCORE
-// ==============================
+
 function loadBestScore() {
   gameState.bestScore = parseInt(localStorage.getItem("bestScore")) || 0;
 }
 
-// ==============================
-// DRAW FUNCTION (what you see)
-// ==============================
+
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -65,9 +61,6 @@ function draw() {
   }
 }
 
-// ==============================
-// DRAW MENU SCREEN
-// ==============================
 function drawMenu() {
   ctx.fillStyle = "#0D0D1A";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -85,10 +78,8 @@ function drawMenu() {
   ctx.font = "18px Arial";
   ctx.fillText("BEST: " + gameState.bestScore, canvas.width / 2, 300);
 
-  // Draw player car in menu
   ctx.drawImage(assets.playerCar, 175, 350, 50, 100);
 
-  // PLAY button
   ctx.fillStyle = "#2E75B6";
   ctx.fillRect(150, 480, 100, 45);
   ctx.fillStyle = "#FFFFFF";
@@ -96,15 +87,21 @@ function drawMenu() {
   ctx.fillText("PLAY", canvas.width / 2, 510);
 }
 
-// ==============================
-// DRAW GAME SCREEN
-// ==============================
-function drawGame() {
-  // Draw player car (red box for now)
-  ctx.fillStyle = "red";
-  ctx.fillRect(player.x, player.y, player.width, player.height);
 
-  // Draw HUD
+function drawGame() {
+  drawRoad(ctx, canvas);
+
+  drawTraffic(ctx, assets.enemyCar);
+
+
+  ctx.drawImage(
+    assets.playerCar,
+    player.x,
+    player.y,
+    player.width,
+    player.height,
+  );
+
   ctx.fillStyle = "rgba(0,0,0,0.7)";
   ctx.fillRect(0, 0, canvas.width, 30);
 
@@ -118,9 +115,6 @@ function drawGame() {
   ctx.fillText("BEST: " + gameState.bestScore, canvas.width - 10, 20);
 }
 
-// ==============================
-// DRAW GAME OVER SCREEN
-// ==============================
 function drawGameOver() {
   ctx.fillStyle = "rgba(0,0,0,0.85)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -138,7 +132,6 @@ function drawGameOver() {
   ctx.font = "22px Arial";
   ctx.fillText("BEST: " + gameState.bestScore, canvas.width / 2, 275);
 
-  // RESTART button
   ctx.fillStyle = "#2E75B6";
   ctx.fillRect(130, 320, 140, 45);
   ctx.fillStyle = "#FFFFFF";
@@ -146,71 +139,65 @@ function drawGameOver() {
   ctx.fillText("RESTART", canvas.width / 2, 350);
 }
 
-// ==============================
-// UPDATE FUNCTION (game logic)
-// ==============================
+
 function update() {
   if (gameState.isPaused) return;
 
   if (gameState.screen === "PLAYING") {
+    updateRoad(gameState.speed, canvas.height);
+
+    spawnTraffic(canvas);
+    updateTraffic(gameState.speed, canvas.height);
+
     gameState.score += 1;
   }
 }
 
-// ==============================
-// MAIN GAME LOOP
-// ==============================
+
 function gameLoop() {
   update();
   draw();
   requestAnimationFrame(gameLoop);
 }
 
-// ==============================
-// KEYBOARD CONTROLS
-// ==============================
+
 document.addEventListener("keydown", function (e) {
   if (gameState.screen !== "PLAYING") return;
 
   if (e.key === "ArrowLeft") {
     player.x -= player.speed;
-    if (player.x < 80) player.x = 80; // left boundary
+    if (player.x < 80) player.x = 80; 
   }
   if (e.key === "ArrowRight") {
     player.x += player.speed;
-    if (player.x > 300) player.x = 300; // right boundary
+    if (player.x > 300) player.x = 300; 
   }
 });
 
-// ==============================
-// MOUSE CLICK (for buttons)
-// ==============================
+
 canvas.addEventListener("click", function (e) {
   const rect = canvas.getBoundingClientRect();
   const clickX = e.clientX - rect.left;
   const clickY = e.clientY - rect.top;
 
-  // PLAY button click
   if (gameState.screen === "MENU") {
     if (clickX > 150 && clickX < 250 && clickY > 480 && clickY < 525) {
       gameState.screen = "PLAYING";
     }
   }
 
-  // RESTART button click
   if (gameState.screen === "GAMEOVER") {
     if (clickX > 130 && clickX < 270 && clickY > 320 && clickY < 365) {
       gameState.score = 0;
       player.x = 175;
       player.y = 550;
+      resetRoad();
       gameState.screen = "PLAYING";
     }
   }
 });
 
-// ==============================
-// START THE GAME
-// ==============================
+
 loadBestScore();
 loadAssets();
 gameLoop();
