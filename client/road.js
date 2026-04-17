@@ -1,8 +1,8 @@
 let roadY = 0;
-let trafficVehicles = []; 
+ export let trafficVehicles = []; 
 let spawnTimer = 0; 
 
-
+ 
 export function drawRoad(ctx, canvas) {
   const sandColor = "#F2D16B";
   const roadColor = "#333333";
@@ -34,18 +34,22 @@ export function updateRoad(speed, canvasHeight) {
   }
 }
 
+
+
+
 export function spawnTraffic(canvas) {
   spawnTimer++;
 
   if (spawnTimer >= 90) {
-    const lanes = [60, 160, 260];
+    const lanes = [100, 175, 250];
+;
     const randomX = lanes[Math.floor(Math.random() * lanes.length)];
 
     trafficVehicles.push({
       x: randomX,
       y: -100,
-      width: 50,
-      height: 100,
+      width:60,
+      height: 110,
     });
     spawnTimer = 0;
   }

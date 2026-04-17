@@ -5,6 +5,7 @@ import {
   drawTraffic,
   updateTraffic,
   resetRoad,
+  trafficVehicles
 } from "./road.js";
 
 const gameState = {
@@ -13,6 +14,7 @@ const gameState = {
   score: 0, 
   bestScore: 0, 
   isPaused: false, 
+  isOver: false
 };
 
 
@@ -40,9 +42,52 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 
+
+function increaseScore() {
+  gameState.score += Math.floor(gameState.speed * 0.5);
+}
+
+function saveBestScore() {
+  if (gameState.score > gameState.bestScore) {
+    gameState.bestScore = gameState.score;
+    localStorage.setItem("bestScore", gameState.bestScore);
+  }
+}
+
 function loadBestScore() {
   gameState.bestScore = parseInt(localStorage.getItem("bestScore")) || 0;
 }
+
+function checkCollision(player, enemy) {
+  return (
+    player.x < enemy.x + enemy.width &&
+    player.x + player.width > enemy.x &&
+    player.y < enemy.y + enemy.height &&
+    player.y + player.height > enemy.y
+  );
+}
+
+function checkAllEnemies(enemies, player) {
+  for (let i = 0; i < enemies.length; i++) {
+    if (checkCollision(player, enemies[i])) {
+      handleGameOver();
+      break;
+    }
+  }
+}
+
+//this for end the game 
+function handleGameOver() {
+  if (!gameState.isOver) {
+    gameState.isOver = true;
+    gameState.screen = "GAMEOVER";
+    saveBestScore();
+  }
+}
+
+ 
+
+
 
 
 function draw() {
@@ -139,7 +184,7 @@ function drawGameOver() {
   ctx.fillText("RESTART", canvas.width / 2, 350);
 }
 
-
+ 
 function update() {
   if (gameState.isPaused) return;
 
@@ -149,7 +194,11 @@ function update() {
     spawnTraffic(canvas);
     updateTraffic(gameState.speed, canvas.height);
 
-    gameState.score += 1;
+   // gameState.score += 1; I think that we need to deleted 
+
+    // I'm  adding this for increase score 
+    increaseScore();
+    checkAllEnemies(trafficVehicles, player);
   }
 }
 
@@ -166,11 +215,11 @@ document.addEventListener("keydown", function (e) {
 
   if (e.key === "ArrowLeft") {
     player.x -= player.speed;
-    if (player.x < 80) player.x = 80; 
+    if (player.x <100)player.x = 100;
   }
   if (e.key === "ArrowRight") {
     player.x += player.speed;
-    if (player.x > 300) player.x = 300; 
+    if (player.x > 220) player.x = 220; 
   }
 });
 
@@ -192,7 +241,11 @@ canvas.addEventListener("click", function (e) {
       player.x = 175;
       player.y = 550;
       resetRoad();
+      // gameState.screen = "PLAYING";
+      gameState.isOver = false;
+
       gameState.screen = "PLAYING";
+
     }
   }
 });
