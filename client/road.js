@@ -1,8 +1,7 @@
 let roadY = 0;
- export let trafficVehicles = []; 
-let spawnTimer = 0; 
+export let trafficVehicles = [];
+let spawnTimer = 0;
 
- 
 export function drawRoad(ctx, canvas) {
   const sandColor = "#F2D16B";
   const roadColor = "#333333";
@@ -26,7 +25,6 @@ export function drawRoad(ctx, canvas) {
   ctx.stroke();
 }
 
-
 export function updateRoad(speed, canvasHeight) {
   roadY += speed;
   if (roadY >= canvasHeight) {
@@ -34,21 +32,17 @@ export function updateRoad(speed, canvasHeight) {
   }
 }
 
-
-
-
 export function spawnTraffic(canvas) {
   spawnTimer++;
 
   if (spawnTimer >= 90) {
-    const lanes = [100, 175, 250];
-;
+    const lanes = [110, 195, 280];
     const randomX = lanes[Math.floor(Math.random() * lanes.length)];
 
     trafficVehicles.push({
       x: randomX,
       y: -100,
-      width:60,
+      width: 60,
       height: 110,
     });
     spawnTimer = 0;
@@ -56,11 +50,10 @@ export function spawnTraffic(canvas) {
 }
 
 export function drawTraffic(ctx, enemyCarImage) {
-    trafficVehicles.forEach((car) => {
-        ctx.drawImage(enemyCarImage, car.x, car.y, car.width, car.height);
-    });
+  trafficVehicles.forEach((car) => {
+    ctx.drawImage(enemyCarImage, car.x, car.y, car.width, car.height);
+  });
 }
-
 
 export function updateTraffic(speed, canvasHeight) {
   for (let i = trafficVehicles.length - 1; i >= 0; i--) {

@@ -40,6 +40,9 @@ const ctx = canvas.getContext("2d");
 
 function increaseScore() {
   gameState.score += Math.floor(gameState.speed * 0.5);
+  if (gameState.score % 200 === 0 && gameState.score > 0) {
+    gameState.speed += 0.3;
+  }
 }
 
 function saveBestScore() {
@@ -54,11 +57,12 @@ function loadBestScore() {
 }
 
 function checkCollision(player, enemy) {
+  const padding = 15;
   return (
-    player.x < enemy.x + enemy.width &&
-    player.x + player.width > enemy.x &&
-    player.y < enemy.y + enemy.height &&
-    player.y + player.height > enemy.y
+    player.x + padding < enemy.x + enemy.width - padding &&
+    player.x + player.width - padding > enemy.x + padding &&
+    player.y + padding < enemy.y + enemy.height - padding &&
+    player.y + player.height - padding > enemy.y + padding
   );
 }
 
@@ -146,6 +150,16 @@ function drawGame() {
   ctx.fillStyle = "#FFD700";
   ctx.textAlign = "right";
   ctx.fillText("BEST: " + gameState.bestScore, canvas.width - 10, 20);
+
+  // Pause button
+  ctx.fillStyle = "#FFD700";
+  ctx.beginPath();
+  ctx.roundRect(canvas.width / 2 - 20, 5, 40, 22, 5);
+  ctx.fill();
+  ctx.fillStyle = "#000000";
+  ctx.font = "bold 14px Arial";
+  ctx.textAlign = "center";
+  ctx.fillText("||", canvas.width / 2, 21);
 }
 
 function drawGameOver() {
@@ -284,6 +298,7 @@ canvas.addEventListener("click", function (e) {
       clickY > 370 &&
       clickY < 420
     ) {
+      gameState.speed = 3;
       gameState.score = 0;
       gameState.isOver = false;
       player.x = 175;
@@ -299,6 +314,7 @@ canvas.addEventListener("click", function (e) {
       clickY > 435 &&
       clickY < 480
     ) {
+      gameState.speed = 3;
       gameState.score = 0;
       gameState.isOver = false;
       player.x = 175;
@@ -307,39 +323,19 @@ canvas.addEventListener("click", function (e) {
       gameState.screen = "MENU";
     }
   }
+
+  // Pause button click
+  if (gameState.screen === "PLAYING") {
+    if (
+      clickX > canvas.width / 2 - 20 &&
+      clickX < canvas.width / 2 + 20 &&
+      clickY > 5 &&
+      clickY < 27
+    ) {
+      gameState.isPaused = !gameState.isPaused;
+    }
+  }
 });
-
-if (gameState.screen === "GAMEOVER") {
-  // RESTART button
-  if (
-    clickX > 80 &&
-    clickX < canvas.width - 80 &&
-    clickY > 370 &&
-    clickY < 420
-  ) {
-    gameState.score = 0;
-    gameState.isOver = false;
-    player.x = 175;
-    player.y = 550;
-    resetRoad();
-    gameState.screen = "PLAYING";
-  }
-
-  // MAIN MENU button
-  if (
-    clickX > 80 &&
-    clickX < canvas.width - 80 &&
-    clickY > 435 &&
-    clickY < 480
-  ) {
-    gameState.score = 0;
-    gameState.isOver = false;
-    player.x = 175;
-    player.y = 550;
-    resetRoad();
-    gameState.screen = "MENU";
-  }
-}
 
 loadBestScore();
 loadAssets();
