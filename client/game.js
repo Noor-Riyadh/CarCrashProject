@@ -1,3 +1,9 @@
+// Multiplayer
+let socket = null;
+let opponentPlayer = null;
+let myPlayerId = null;
+let isMultiplayer = false;
+
 import {
   drawRoad,
   updateRoad,
@@ -75,12 +81,20 @@ function checkAllEnemies(enemies, player) {
   }
 }
 
-//this for end the game
 function handleGameOver() {
   if (!gameState.isOver) {
     gameState.isOver = true;
     gameState.screen = "GAMEOVER";
     saveBestScore();
+
+    // Tell opponent you lost
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(
+        JSON.stringify({
+          type: "gameOver",
+        }),
+      );
+    }
   }
 }
 
@@ -124,6 +138,15 @@ function drawMenu() {
   ctx.fillStyle = "#FFFFFF";
   ctx.font = "bold 20px Arial";
   ctx.fillText("PLAY", canvas.width / 2, 510);
+
+  // MULTIPLAYER button
+  ctx.fillStyle = "#1E6B3C";
+  ctx.beginPath();
+  ctx.roundRect(130, 545, 140, 45, 10);
+  ctx.fill();
+  ctx.fillStyle = "#FFFFFF";
+  ctx.font = "bold 16px Arial";
+  ctx.fillText("MULTIPLAYER", canvas.width / 2, 573);
 }
 
 function drawGame() {
@@ -160,6 +183,30 @@ function drawGame() {
   ctx.font = "bold 14px Arial";
   ctx.textAlign = "center";
   ctx.fillText("||", canvas.width / 2, 21);
+
+  // Draw opponent car if in multiplayer
+  if (isMultiplayer && opponentPlayer) {
+    // Draw opponent in blue color
+    ctx.globalAlpha = 0.8;
+    ctx.drawImage(
+      assets.enemyCar,
+      opponentPlayer.x,
+      opponentPlayer.y,
+      player.width,
+      player.height,
+    );
+    ctx.globalAlpha = 1.0;
+
+    // Show opponent score
+    ctx.fillStyle = "#00FF88";
+    ctx.font = "12px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText(
+      "P2: " + (opponentPlayer.score || 0),
+      opponentPlayer.x + 25,
+      opponentPlayer.y - 5,
+    );
+  }
 }
 
 function drawGameOver() {
@@ -255,6 +302,15 @@ function update() {
     // I'm  adding this for increase score
     increaseScore();
     checkAllEnemies(trafficVehicles, player);
+
+    if (gameState.screen === "PLAYING") {
+      updateRoad(gameState.speed, canvas.height);
+      spawnTraffic(canvas);
+      updateTraffic(gameState.speed, canvas.height);
+      increaseScore();
+      checkAllEnemies(trafficVehicles, player);
+      sendPositionToServer(); // ← ADD THIS LINE
+    }
   }
 }
 
@@ -335,6 +391,12 @@ canvas.addEventListener("click", function (e) {
       gameState.isPaused = !gameState.isPaused;
     }
   }
+
+  // MULTIPLAYER button
+  if (clickX > 130 && clickX < 270 && clickY > 545 && clickY < 590) {
+    connectToServer();
+    gameState.screen = "PLAYING";
+  }
 });
 
 // Touch tap for buttons (menu and game over)
@@ -414,7 +476,60 @@ canvas.addEventListener(
   { passive: false },
 );
 
+// Cross Playtorm
+function connectToServer() {
+  socket = new WebSocket("wss://YOUR-RAILWAY-URL.up.railway.app");
 
+  socket.onopen = function () {
+    console.log("Connected to server!");
+    isMultiplayer = true;
+  };
+
+  socket.onmessage = function (event) {
+    const data = JSON.parse(event.data);
+
+    if (data.type === "connected") {
+      myPlayerId = data.id;
+    }
+
+    if (data.type === "opponentMove") {
+      opponentPlayer = {
+        x: data.x,
+        y: data.y,
+        score: data.score,
+      };
+    }
+
+    // Opponent lost — remove them from screen
+    if (data.type === "opponentGameOver") {
+      opponentPlayer = null;
+      console.log("Opponent lost! You keep playing!");
+    }
+
+    if (data.type === "playerCount") {
+      console.log("Players: " + data.count);
+    }
+  };
+
+  socket.onclose = function () {
+    isMultiplayer = false;
+    opponentPlayer = null;
+    console.log("Disconnected from server");
+  };
+}
+
+function sendPositionToServer() {
+  if (socket && socket.readyState === WebSocket.OPEN) {
+    socket.send(
+      JSON.stringify({
+        type: "move",
+        x: player.x,
+        y: player.y,
+        score: gameState.score,
+      }),
+    );
+  }
+}
 loadBestScore();
 loadAssets();
 gameLoop();
