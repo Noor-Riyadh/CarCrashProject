@@ -530,6 +530,20 @@ function sendPositionToServer() {
     );
   }
 }
+// loadBestScore();
+// loadAssets();
+// gameLoop();
 loadBestScore();
 loadAssets();
-gameLoop();
+
+// Wait for images then start
+Promise.all([
+  new Promise((resolve) => {
+    assets.playerCar.onload = resolve;
+  }),
+  new Promise((resolve) => {
+    assets.enemyCar.onload = resolve;
+  }),
+]).then(() => {
+  gameLoop();
+});
