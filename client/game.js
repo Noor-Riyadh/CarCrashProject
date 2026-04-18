@@ -5,27 +5,25 @@ import {
   drawTraffic,
   updateTraffic,
   resetRoad,
-  trafficVehicles
+  trafficVehicles,
 } from "./road.js";
 
 const gameState = {
-  screen: "MENU", 
+  screen: "MENU",
   speed: 3,
-  score: 0, 
-  bestScore: 0, 
-  isPaused: false, 
-  isOver: false
+  score: 0,
+  bestScore: 0,
+  isPaused: false,
+  isOver: false,
 };
-
 
 const player = {
   x: 175,
-  y: 550, 
+  y: 550,
   width: 50,
   height: 100,
-  speed: 5, 
+  speed: 5,
 };
-
 
 const assets = {};
 
@@ -37,11 +35,8 @@ function loadAssets() {
   assets.enemyCar.src = "../assets/enemy_car.png";
 }
 
-
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
-
-
 
 function increaseScore() {
   gameState.score += Math.floor(gameState.speed * 0.5);
@@ -76,7 +71,7 @@ function checkAllEnemies(enemies, player) {
   }
 }
 
-//this for end the game 
+//this for end the game
 function handleGameOver() {
   if (!gameState.isOver) {
     gameState.isOver = true;
@@ -84,11 +79,6 @@ function handleGameOver() {
     saveBestScore();
   }
 }
-
- 
-
-
-
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -132,12 +122,10 @@ function drawMenu() {
   ctx.fillText("PLAY", canvas.width / 2, 510);
 }
 
-
 function drawGame() {
   drawRoad(ctx, canvas);
 
   drawTraffic(ctx, assets.enemyCar);
-
 
   ctx.drawImage(
     assets.playerCar,
@@ -161,30 +149,84 @@ function drawGame() {
 }
 
 function drawGameOver() {
-  ctx.fillStyle = "rgba(0,0,0,0.85)";
+  // Dark overlay with road visible behind
+  ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+  // GAME OVER title
   ctx.fillStyle = "#FF3333";
-  ctx.font = "bold 48px Arial";
+  ctx.font = "bold 52px Arial";
   ctx.textAlign = "center";
-  ctx.fillText("GAME OVER", canvas.width / 2, 150);
+  ctx.fillText("GAME OVER", canvas.width / 2, 120);
 
+  // Divider line
+  ctx.fillStyle = "#444444";
+  ctx.fillRect(60, 135, canvas.width - 120, 2);
+
+  // YOUR SCORE card (dark box)
+  ctx.fillStyle = "#1A1A1A";
+  ctx.beginPath();
+  ctx.roundRect(50, 150, canvas.width - 100, 100, 12);
+  ctx.fill();
+
+  // YOUR SCORE label
+  ctx.fillStyle = "#AAAAAA";
+  ctx.font = "16px Arial";
+  ctx.textAlign = "center";
+  ctx.fillText("YOUR SCORE", canvas.width / 2, 180);
+
+  // Score number
   ctx.fillStyle = "#FFFFFF";
-  ctx.font = "28px Arial";
-  ctx.fillText("SCORE: " + gameState.score, canvas.width / 2, 230);
+  ctx.font = "bold 48px Arial";
+  ctx.fillText(gameState.score, canvas.width / 2, 235);
 
+  // NEW BEST badge (only show if score equals bestScore)
+  if (gameState.score >= gameState.bestScore && gameState.score > 0) {
+    ctx.fillStyle = "#FFD700";
+    ctx.beginPath();
+    ctx.roundRect(canvas.width / 2 + 30, 240, 90, 24, 6);
+    ctx.fill();
+    ctx.fillStyle = "#333300";
+    ctx.font = "bold 12px Arial";
+    ctx.fillText("NEW BEST!", canvas.width / 2 + 75, 257);
+  }
+
+  // BEST SCORE card (dark box)
+  ctx.fillStyle = "#1A1A1A";
+  ctx.beginPath();
+  ctx.roundRect(50, 270, canvas.width - 100, 70, 12);
+  ctx.fill();
+
+  // BEST SCORE label
+  ctx.fillStyle = "#AAAAAA";
+  ctx.font = "16px Arial";
+  ctx.textAlign = "center";
+  ctx.fillText("BEST SCORE", canvas.width / 2, 295);
+
+  // Best score number
   ctx.fillStyle = "#FFD700";
-  ctx.font = "22px Arial";
-  ctx.fillText("BEST: " + gameState.bestScore, canvas.width / 2, 275);
+  ctx.font = "bold 28px Arial";
+  ctx.fillText(gameState.bestScore, canvas.width / 2, 328);
 
+  // RESTART button
   ctx.fillStyle = "#2E75B6";
-  ctx.fillRect(130, 320, 140, 45);
+  ctx.beginPath();
+  ctx.roundRect(80, 370, canvas.width - 160, 50, 10);
+  ctx.fill();
   ctx.fillStyle = "#FFFFFF";
-  ctx.font = "bold 18px Arial";
-  ctx.fillText("RESTART", canvas.width / 2, 350);
+  ctx.font = "bold 22px Arial";
+  ctx.fillText("RESTART", canvas.width / 2, 403);
+
+  // MAIN MENU button
+  ctx.fillStyle = "#444444";
+  ctx.beginPath();
+  ctx.roundRect(80, 435, canvas.width - 160, 45, 10);
+  ctx.fill();
+  ctx.fillStyle = "#CCCCCC";
+  ctx.font = "18px Arial";
+  ctx.fillText("MAIN MENU", canvas.width / 2, 463);
 }
 
- 
 function update() {
   if (gameState.isPaused) return;
 
@@ -194,14 +236,13 @@ function update() {
     spawnTraffic(canvas);
     updateTraffic(gameState.speed, canvas.height);
 
-   // gameState.score += 1; I think that we need to deleted 
+    // gameState.score += 1; I think that we need to deleted
 
-    // I'm  adding this for increase score 
+    // I'm  adding this for increase score
     increaseScore();
     checkAllEnemies(trafficVehicles, player);
   }
 }
-
 
 function gameLoop() {
   update();
@@ -209,47 +250,96 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
-
 document.addEventListener("keydown", function (e) {
   if (gameState.screen !== "PLAYING") return;
 
   if (e.key === "ArrowLeft") {
     player.x -= player.speed;
-    if (player.x <100)player.x = 100;
+    if (player.x < 100) player.x = 100;
   }
   if (e.key === "ArrowRight") {
     player.x += player.speed;
-    if (player.x > 220) player.x = 220; 
+    if (player.x > 220) player.x = 220;
   }
 });
-
 
 canvas.addEventListener("click", function (e) {
   const rect = canvas.getBoundingClientRect();
   const clickX = e.clientX - rect.left;
   const clickY = e.clientY - rect.top;
 
+  // MENU screen - PLAY button
   if (gameState.screen === "MENU") {
     if (clickX > 150 && clickX < 250 && clickY > 480 && clickY < 525) {
       gameState.screen = "PLAYING";
     }
   }
 
+  // GAMEOVER screen - RESTART and MAIN MENU buttons
   if (gameState.screen === "GAMEOVER") {
-    if (clickX > 130 && clickX < 270 && clickY > 320 && clickY < 365) {
+    // RESTART button
+    if (
+      clickX > 80 &&
+      clickX < canvas.width - 80 &&
+      clickY > 370 &&
+      clickY < 420
+    ) {
       gameState.score = 0;
+      gameState.isOver = false;
       player.x = 175;
       player.y = 550;
       resetRoad();
-      // gameState.screen = "PLAYING";
-      gameState.isOver = false;
-
       gameState.screen = "PLAYING";
+    }
 
+    // MAIN MENU button
+    if (
+      clickX > 80 &&
+      clickX < canvas.width - 80 &&
+      clickY > 435 &&
+      clickY < 480
+    ) {
+      gameState.score = 0;
+      gameState.isOver = false;
+      player.x = 175;
+      player.y = 550;
+      resetRoad();
+      gameState.screen = "MENU";
     }
   }
 });
 
+if (gameState.screen === "GAMEOVER") {
+  // RESTART button
+  if (
+    clickX > 80 &&
+    clickX < canvas.width - 80 &&
+    clickY > 370 &&
+    clickY < 420
+  ) {
+    gameState.score = 0;
+    gameState.isOver = false;
+    player.x = 175;
+    player.y = 550;
+    resetRoad();
+    gameState.screen = "PLAYING";
+  }
+
+  // MAIN MENU button
+  if (
+    clickX > 80 &&
+    clickX < canvas.width - 80 &&
+    clickY > 435 &&
+    clickY < 480
+  ) {
+    gameState.score = 0;
+    gameState.isOver = false;
+    player.x = 175;
+    player.y = 550;
+    resetRoad();
+    gameState.screen = "MENU";
+  }
+}
 
 loadBestScore();
 loadAssets();
