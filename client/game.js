@@ -478,7 +478,7 @@ canvas.addEventListener(
 
 // Cross Playtorm
 function connectToServer() {
-  socket = new WebSocket("wss://YOUR-RAILWAY-URL.up.railway.app");
+  socket = new WebSocket("https://carcrashproject-production.up.railway.app/");
 
   socket.onopen = function () {
     console.log("Connected to server!");
