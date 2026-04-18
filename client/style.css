@@ -15,7 +15,6 @@ body {
 
 canvas {
     display: block;
-    /* Makes canvas fill the screen on mobile */
     width: 100vw;
     height: 100vh;
     max-width: 400px;
