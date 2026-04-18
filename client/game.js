@@ -121,7 +121,8 @@ function drawMenu() {
   ctx.font = "18px Arial";
   ctx.fillText("BEST: " + gameState.bestScore, canvas.width / 2, 300);
 
-  ctx.drawImage(assets.playerCar, 175, 350, 50, 100);
+  // ctx.drawImage(assets.playerCar, 175, 350, 50, 100);
+  ctx.drawImage(assets.playerCar, 175, 310, 50, 100);
 
   // PLAY button
   ctx.fillStyle = "#2E75B6";
