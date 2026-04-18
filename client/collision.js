@@ -1,12 +1,24 @@
 // Manar - Collision Detection and Score System
 
 //first part for collosion 
+// function checkCollision(player, enemy) {
+//     return player.x < enemy.x + enemy.width &&
+//            player.x + player.width > enemy.x &&
+//            player.y < enemy.y + enemy.height &&
+//            player.y + player.height > enemy.y;
+// }
+
 function checkCollision(player, enemy) {
-    return player.x < enemy.x + enemy.width &&
-           player.x + player.width > enemy.x &&
-           player.y < enemy.y + enemy.height &&
-           player.y + player.height > enemy.y;
+    const padding = 15; // this makes collision box smaller
+    
+    return (
+        player.x + padding < enemy.x + enemy.width - padding &&
+        player.x + player.width - padding > enemy.x + padding &&
+        player.y + padding < enemy.y + enemy.height - padding &&
+        player.y + player.height - padding > enemy.y + padding
+    );
 }
+
 //if the car mave more than one collision okay 
 function checkAllEnemies(enemies, player) {
     for (let i = 0; i < enemies.length; i++) {
