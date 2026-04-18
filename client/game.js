@@ -35,7 +35,7 @@ const assets = {};
 
 function loadAssets() {
   assets.playerCar = new Image();
-  assets.playerCar.src = "../assets/player_car.png";
+  assets.playerCar.src = "./assets/player_car.png";
 
   assets.enemyCar = new Image();
   assets.enemyCar.src = "./assets/enemy_car.png";
@@ -400,6 +400,7 @@ canvas.addEventListener("click", function (e) {
 });
 
 // Touch tap for buttons (menu and game over)
+
 canvas.addEventListener(
   "touchstart",
   function (e) {
@@ -412,16 +413,21 @@ canvas.addEventListener(
     const touchX = (e.touches[0].clientX - rect.left) * scaleX;
     const touchY = (e.touches[0].clientY - rect.top) * scaleY;
 
-    // MENU - PLAY button
+    // MENU buttons
     if (gameState.screen === "MENU") {
+      // PLAY button
       if (touchX > 150 && touchX < 250 && touchY > 480 && touchY < 525) {
+        gameState.screen = "PLAYING";
+      }
+      // MULTIPLAYER button
+      if (touchX > 130 && touchX < 270 && touchY > 545 && touchY < 590) {
+        connectToServer();
         gameState.screen = "PLAYING";
       }
     }
 
-    // PLAYING - move car + pause button
+    // PLAYING - move car + pause
     if (gameState.screen === "PLAYING") {
-      // Pause button
       if (
         touchX > canvas.width / 2 - 20 &&
         touchX < canvas.width / 2 + 20 &&
@@ -431,7 +437,6 @@ canvas.addEventListener(
         gameState.isPaused = !gameState.isPaused;
         return;
       }
-      // Move car
       if (touchX < canvas.width / 2) {
         player.x -= player.speed * 3;
         if (player.x < 100) player.x = 100;
@@ -475,6 +480,7 @@ canvas.addEventListener(
   },
   { passive: false },
 );
+
 
 // Cross Playtorm
 function connectToServer() {

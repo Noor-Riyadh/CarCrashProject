@@ -15,9 +15,9 @@ body {
 
 canvas {
     display: block;
-    width: 100vw;
-    height: 100vh;
+    /* Fill the whole phone screen */
+    width: 100vmin;
+    height: 100vmin;
     max-width: 400px;
     max-height: 700px;
-    object-fit: contain;
 }
