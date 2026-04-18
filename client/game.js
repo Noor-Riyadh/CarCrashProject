@@ -16,12 +16,12 @@ let isMultiplayer = false;
 
 // ── Game State ──
 const gameState = {
-  screen: "MENU",
-  speed: 3,
-  score: 0,
-  bestScore: 0,
-  isPaused: false,
-  isOver: false,
+    screen: "MENU",    // which screen is showing right now
+    speed: 3,          // how fast everything moves
+    score: 0,          // current score
+    bestScore: 0,      // highest score ever
+    isPaused: false,   // is game paused?
+    isOver: false      // did player crash?
 };
 
 // ── Player ──
@@ -491,6 +491,7 @@ function sendPositionToServer() {
 // ── Start ──
 loadBestScore();
 loadAssets();
+// This says: "Wait until BOTH images finish loading, THEN start the game loop." This is why the game works on Netlify — images load from internet so they need time.
 Promise.all([
   new Promise((resolve) => {
     assets.playerCar.onload = resolve;
