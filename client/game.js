@@ -267,11 +267,11 @@ function gameLoop() {
 document.addEventListener("keydown", function (e) {
   if (gameState.screen !== "PLAYING") return;
 
-  if (e.key === "ArrowLeft") {
+  if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") {
     player.x -= player.speed;
     if (player.x < 100) player.x = 100;
   }
-  if (e.key === "ArrowRight") {
+  if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") {
     player.x += player.speed;
     if (player.x > 220) player.x = 220;
   }
@@ -336,6 +336,84 @@ canvas.addEventListener("click", function (e) {
     }
   }
 });
+
+// Touch tap for buttons (menu and game over)
+canvas.addEventListener(
+  "touchstart",
+  function (e) {
+    e.preventDefault();
+
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    const touchX = (e.touches[0].clientX - rect.left) * scaleX;
+    const touchY = (e.touches[0].clientY - rect.top) * scaleY;
+
+    // MENU - PLAY button
+    if (gameState.screen === "MENU") {
+      if (touchX > 150 && touchX < 250 && touchY > 480 && touchY < 525) {
+        gameState.screen = "PLAYING";
+      }
+    }
+
+    // PLAYING - move car + pause button
+    if (gameState.screen === "PLAYING") {
+      // Pause button
+      if (
+        touchX > canvas.width / 2 - 20 &&
+        touchX < canvas.width / 2 + 20 &&
+        touchY > 5 &&
+        touchY < 27
+      ) {
+        gameState.isPaused = !gameState.isPaused;
+        return;
+      }
+      // Move car
+      if (touchX < canvas.width / 2) {
+        player.x -= player.speed * 3;
+        if (player.x < 100) player.x = 100;
+      } else {
+        player.x += player.speed * 3;
+        if (player.x > 220) player.x = 220;
+      }
+    }
+
+    // GAMEOVER buttons
+    if (gameState.screen === "GAMEOVER") {
+      if (
+        touchX > 80 &&
+        touchX < canvas.width - 80 &&
+        touchY > 370 &&
+        touchY < 420
+      ) {
+        gameState.speed = 3;
+        gameState.score = 0;
+        gameState.isOver = false;
+        player.x = 175;
+        player.y = 550;
+        resetRoad();
+        gameState.screen = "PLAYING";
+      }
+      if (
+        touchX > 80 &&
+        touchX < canvas.width - 80 &&
+        touchY > 435 &&
+        touchY < 480
+      ) {
+        gameState.speed = 3;
+        gameState.score = 0;
+        gameState.isOver = false;
+        player.x = 175;
+        player.y = 550;
+        resetRoad();
+        gameState.screen = "MENU";
+      }
+    }
+  },
+  { passive: false },
+);
+
 
 loadBestScore();
 loadAssets();

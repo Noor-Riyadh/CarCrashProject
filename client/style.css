@@ -1,12 +1,24 @@
-body {
+* {
     margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
     background-color: #111;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
+    overflow: hidden;
 }
 
 canvas {
     display: block;
+    /* Makes canvas fill the screen on mobile */
+    width: 100vw;
+    height: 100vh;
+    max-width: 400px;
+    max-height: 700px;
+    object-fit: contain;
 }
