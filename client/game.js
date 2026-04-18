@@ -1,9 +1,3 @@
-// Multiplayer
-let socket = null;
-let opponentPlayer = null;
-let myPlayerId = null;
-let isMultiplayer = false;
-
 import {
   drawRoad,
   updateRoad,
@@ -14,6 +8,13 @@ import {
   trafficVehicles,
 } from "./road.js";
 
+// ── Multiplayer ──
+let socket = null;
+let opponentPlayer = null;
+let myPlayerId = null;
+let isMultiplayer = false;
+
+// ── Game State ──
 const gameState = {
   screen: "MENU",
   speed: 3,
@@ -23,6 +24,7 @@ const gameState = {
   isOver: false,
 };
 
+// ── Player ──
 const player = {
   x: 175,
   y: 550,
@@ -31,19 +33,20 @@ const player = {
   speed: 5,
 };
 
+// ── Assets ──
 const assets = {};
-
 function loadAssets() {
   assets.playerCar = new Image();
   assets.playerCar.src = "./assets/player_car.png";
-
   assets.enemyCar = new Image();
   assets.enemyCar.src = "./assets/enemy_car.png";
 }
 
+// ── Canvas ──
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
+// ── Score ──
 function increaseScore() {
   gameState.score += Math.floor(gameState.speed * 0.5);
   if (gameState.score % 200 === 0 && gameState.score > 0) {
@@ -62,6 +65,7 @@ function loadBestScore() {
   gameState.bestScore = parseInt(localStorage.getItem("bestScore")) || 0;
 }
 
+// ── Collision ──
 function checkCollision(player, enemy) {
   const padding = 15;
   return (
@@ -86,32 +90,18 @@ function handleGameOver() {
     gameState.isOver = true;
     gameState.screen = "GAMEOVER";
     saveBestScore();
-
-    // Tell opponent you lost
     if (socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(
-        JSON.stringify({
-          type: "gameOver",
-        }),
-      );
+      socket.send(JSON.stringify({ type: "gameOver" }));
     }
   }
 }
 
+// ── Draw ──
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  if (gameState.screen === "MENU") {
-    drawMenu();
-  }
-
-  if (gameState.screen === "PLAYING") {
-    drawGame();
-  }
-
-  if (gameState.screen === "GAMEOVER") {
-    drawGameOver();
-  }
+  if (gameState.screen === "MENU") drawMenu();
+  if (gameState.screen === "PLAYING") drawGame();
+  if (gameState.screen === "GAMEOVER") drawGameOver();
 }
 
 function drawMenu() {
@@ -133,25 +123,27 @@ function drawMenu() {
 
   ctx.drawImage(assets.playerCar, 175, 350, 50, 100);
 
+  // PLAY button
   ctx.fillStyle = "#2E75B6";
-  ctx.fillRect(150, 480, 100, 45);
+  ctx.beginPath();
+  ctx.roundRect(130, 430, 140, 50, 10);
+  ctx.fill();
   ctx.fillStyle = "#FFFFFF";
   ctx.font = "bold 20px Arial";
-  ctx.fillText("PLAY", canvas.width / 2, 510);
+  ctx.fillText("PLAY", canvas.width / 2, 463);
 
   // MULTIPLAYER button
   ctx.fillStyle = "#1E6B3C";
   ctx.beginPath();
-  ctx.roundRect(130, 545, 140, 45, 10);
+  ctx.roundRect(130, 495, 140, 45, 10);
   ctx.fill();
   ctx.fillStyle = "#FFFFFF";
   ctx.font = "bold 16px Arial";
-  ctx.fillText("MULTIPLAYER", canvas.width / 2, 573);
+  ctx.fillText("MULTIPLAYER", canvas.width / 2, 523);
 }
 
 function drawGame() {
   drawRoad(ctx, canvas);
-
   drawTraffic(ctx, assets.enemyCar);
 
   ctx.drawImage(
@@ -162,14 +154,13 @@ function drawGame() {
     player.height,
   );
 
+  // HUD
   ctx.fillStyle = "rgba(0,0,0,0.7)";
   ctx.fillRect(0, 0, canvas.width, 30);
-
   ctx.fillStyle = "#FFFFFF";
   ctx.font = "14px Arial";
   ctx.textAlign = "left";
   ctx.fillText("SCORE: " + gameState.score, 10, 20);
-
   ctx.fillStyle = "#FFD700";
   ctx.textAlign = "right";
   ctx.fillText("BEST: " + gameState.bestScore, canvas.width - 10, 20);
@@ -184,9 +175,8 @@ function drawGame() {
   ctx.textAlign = "center";
   ctx.fillText("||", canvas.width / 2, 21);
 
-  // Draw opponent car if in multiplayer
+  // Draw opponent
   if (isMultiplayer && opponentPlayer) {
-    // Draw opponent in blue color
     ctx.globalAlpha = 0.8;
     ctx.drawImage(
       assets.enemyCar,
@@ -196,8 +186,6 @@ function drawGame() {
       player.height,
     );
     ctx.globalAlpha = 1.0;
-
-    // Show opponent score
     ctx.fillStyle = "#00FF88";
     ctx.font = "12px Arial";
     ctx.textAlign = "center";
@@ -207,41 +195,41 @@ function drawGame() {
       opponentPlayer.y - 5,
     );
   }
+
+  // Paused overlay
+  if (gameState.isPaused) {
+    ctx.fillStyle = "rgba(0,0,0,0.6)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "bold 36px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("PAUSED", canvas.width / 2, canvas.height / 2);
+  }
 }
 
 function drawGameOver() {
-  // Dark overlay with road visible behind
   ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // GAME OVER title
   ctx.fillStyle = "#FF3333";
   ctx.font = "bold 52px Arial";
   ctx.textAlign = "center";
   ctx.fillText("GAME OVER", canvas.width / 2, 120);
 
-  // Divider line
   ctx.fillStyle = "#444444";
   ctx.fillRect(60, 135, canvas.width - 120, 2);
 
-  // YOUR SCORE card (dark box)
   ctx.fillStyle = "#1A1A1A";
   ctx.beginPath();
   ctx.roundRect(50, 150, canvas.width - 100, 100, 12);
   ctx.fill();
-
-  // YOUR SCORE label
   ctx.fillStyle = "#AAAAAA";
   ctx.font = "16px Arial";
-  ctx.textAlign = "center";
   ctx.fillText("YOUR SCORE", canvas.width / 2, 180);
-
-  // Score number
   ctx.fillStyle = "#FFFFFF";
   ctx.font = "bold 48px Arial";
   ctx.fillText(gameState.score, canvas.width / 2, 235);
 
-  // NEW BEST badge (only show if score equals bestScore)
   if (gameState.score >= gameState.bestScore && gameState.score > 0) {
     ctx.fillStyle = "#FFD700";
     ctx.beginPath();
@@ -252,24 +240,17 @@ function drawGameOver() {
     ctx.fillText("NEW BEST!", canvas.width / 2 + 75, 257);
   }
 
-  // BEST SCORE card (dark box)
   ctx.fillStyle = "#1A1A1A";
   ctx.beginPath();
   ctx.roundRect(50, 270, canvas.width - 100, 70, 12);
   ctx.fill();
-
-  // BEST SCORE label
   ctx.fillStyle = "#AAAAAA";
   ctx.font = "16px Arial";
-  ctx.textAlign = "center";
   ctx.fillText("BEST SCORE", canvas.width / 2, 295);
-
-  // Best score number
   ctx.fillStyle = "#FFD700";
   ctx.font = "bold 28px Arial";
   ctx.fillText(gameState.bestScore, canvas.width / 2, 328);
 
-  // RESTART button
   ctx.fillStyle = "#2E75B6";
   ctx.beginPath();
   ctx.roundRect(80, 370, canvas.width - 160, 50, 10);
@@ -278,7 +259,6 @@ function drawGameOver() {
   ctx.font = "bold 22px Arial";
   ctx.fillText("RESTART", canvas.width / 2, 403);
 
-  // MAIN MENU button
   ctx.fillStyle = "#444444";
   ctx.beginPath();
   ctx.roundRect(80, 435, canvas.width - 160, 45, 10);
@@ -288,29 +268,16 @@ function drawGameOver() {
   ctx.fillText("MAIN MENU", canvas.width / 2, 463);
 }
 
+// ── Update ──
 function update() {
   if (gameState.isPaused) return;
-
   if (gameState.screen === "PLAYING") {
     updateRoad(gameState.speed, canvas.height);
-
     spawnTraffic(canvas);
     updateTraffic(gameState.speed, canvas.height);
-
-    // gameState.score += 1; I think that we need to deleted
-
-    // I'm  adding this for increase score
     increaseScore();
     checkAllEnemies(trafficVehicles, player);
-
-    if (gameState.screen === "PLAYING") {
-      updateRoad(gameState.speed, canvas.height);
-      spawnTraffic(canvas);
-      updateTraffic(gameState.speed, canvas.height);
-      increaseScore();
-      checkAllEnemies(trafficVehicles, player);
-      sendPositionToServer(); // ← ADD THIS LINE
-    }
+    sendPositionToServer();
   }
 }
 
@@ -320,9 +287,9 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
+// ── Keyboard ──
 document.addEventListener("keydown", function (e) {
   if (gameState.screen !== "PLAYING") return;
-
   if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") {
     player.x -= player.speed;
     if (player.x < 100) player.x = 100;
@@ -333,21 +300,25 @@ document.addEventListener("keydown", function (e) {
   }
 });
 
+// ── Click ──
 canvas.addEventListener("click", function (e) {
   const rect = canvas.getBoundingClientRect();
   const clickX = e.clientX - rect.left;
   const clickY = e.clientY - rect.top;
 
-  // MENU screen - PLAY button
   if (gameState.screen === "MENU") {
-    if (clickX > 150 && clickX < 250 && clickY > 480 && clickY < 525) {
+    // PLAY button
+    if (clickX > 130 && clickX < 270 && clickY > 430 && clickY < 480) {
+      gameState.screen = "PLAYING";
+    }
+    // MULTIPLAYER button
+    if (clickX > 130 && clickX < 270 && clickY > 495 && clickY < 540) {
+      connectToServer();
       gameState.screen = "PLAYING";
     }
   }
 
-  // GAMEOVER screen - RESTART and MAIN MENU buttons
   if (gameState.screen === "GAMEOVER") {
-    // RESTART button
     if (
       clickX > 80 &&
       clickX < canvas.width - 80 &&
@@ -362,8 +333,6 @@ canvas.addEventListener("click", function (e) {
       resetRoad();
       gameState.screen = "PLAYING";
     }
-
-    // MAIN MENU button
     if (
       clickX > 80 &&
       clickX < canvas.width - 80 &&
@@ -380,7 +349,6 @@ canvas.addEventListener("click", function (e) {
     }
   }
 
-  // Pause button click
   if (gameState.screen === "PLAYING") {
     if (
       clickX > canvas.width / 2 - 20 &&
@@ -391,42 +359,29 @@ canvas.addEventListener("click", function (e) {
       gameState.isPaused = !gameState.isPaused;
     }
   }
-
-  // MULTIPLAYER button
-  if (clickX > 130 && clickX < 270 && clickY > 545 && clickY < 590) {
-    connectToServer();
-    gameState.screen = "PLAYING";
-  }
 });
 
-// Touch tap for buttons (menu and game over)
-
+// ── Touch ──
 canvas.addEventListener(
   "touchstart",
   function (e) {
     e.preventDefault();
-
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
-
     const touchX = (e.touches[0].clientX - rect.left) * scaleX;
     const touchY = (e.touches[0].clientY - rect.top) * scaleY;
 
-    // MENU buttons
     if (gameState.screen === "MENU") {
-      // PLAY button
-      if (touchX > 150 && touchX < 250 && touchY > 480 && touchY < 525) {
+      if (touchX > 130 && touchX < 270 && touchY > 430 && touchY < 480) {
         gameState.screen = "PLAYING";
       }
-      // MULTIPLAYER button
-      if (touchX > 130 && touchX < 270 && touchY > 545 && touchY < 590) {
+      if (touchX > 130 && touchX < 270 && touchY > 495 && touchY < 540) {
         connectToServer();
         gameState.screen = "PLAYING";
       }
     }
 
-    // PLAYING - move car + pause
     if (gameState.screen === "PLAYING") {
       if (
         touchX > canvas.width / 2 - 20 &&
@@ -446,7 +401,6 @@ canvas.addEventListener(
       }
     }
 
-    // GAMEOVER buttons
     if (gameState.screen === "GAMEOVER") {
       if (
         touchX > 80 &&
@@ -481,10 +435,9 @@ canvas.addEventListener(
   { passive: false },
 );
 
-
-// Cross Playtorm
+// ── Multiplayer ──
 function connectToServer() {
-  socket = new WebSocket("https://carcrashproject-production.up.railway.app/");
+  socket = new WebSocket("wss://carcrashproject-production.up.railway.app");
 
   socket.onopen = function () {
     console.log("Connected to server!");
@@ -496,20 +449,17 @@ function connectToServer() {
 
     if (data.type === "connected") {
       myPlayerId = data.id;
+      if (data.id === "player2") {
+        player.x = 120;
+      }
     }
 
     if (data.type === "opponentMove") {
-      opponentPlayer = {
-        x: data.x,
-        y: data.y,
-        score: data.score,
-      };
+      opponentPlayer = { x: data.x, y: data.y, score: data.score };
     }
 
-    // Opponent lost — remove them from screen
     if (data.type === "opponentGameOver") {
       opponentPlayer = null;
-      console.log("Opponent lost! You keep playing!");
     }
 
     if (data.type === "playerCount") {
@@ -536,13 +486,10 @@ function sendPositionToServer() {
     );
   }
 }
-// loadBestScore();
-// loadAssets();
-// gameLoop();
+
+// ── Start ──
 loadBestScore();
 loadAssets();
-
-// Wait for images then start
 Promise.all([
   new Promise((resolve) => {
     assets.playerCar.onload = resolve;
