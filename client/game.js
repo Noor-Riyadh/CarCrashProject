@@ -38,7 +38,7 @@ function loadAssets() {
   assets.playerCar.src = "../assets/player_car.png";
 
   assets.enemyCar = new Image();
-  assets.enemyCar.src = "../assets/enemy_car.png";
+  assets.enemyCar.src = "./assets/enemy_car.png";
 }
 
 const canvas = document.getElementById("gameCanvas");
