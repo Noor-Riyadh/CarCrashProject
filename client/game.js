@@ -96,21 +96,21 @@ function checkAllEnemies(enemies, player) {
 //   }
 // }
 function handleGameOver() {
-    if (!gameState.isOver) {
-        gameState.isOver = true;
-        gameState.screen = "GAMEOVER";
-        saveBestScore();
+  if (!gameState.isOver) {
+    gameState.isOver = true;
+    gameState.screen = "GAMEOVER";
+    saveBestScore();
 
-        
-        if (socket && socket.readyState === WebSocket.OPEN) {
-            socket.send(JSON.stringify({
-                type: "gameOver"
-            }));
-            console.log("Sent gameOver to server"); // Testing 
-        }
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(
+        JSON.stringify({
+          type: "gameOver",
+        }),
+      );
+      console.log("Sent gameOver to server"); // Testing
     }
+  }
 }
-
 
 // ── Draw ──
 function draw() {
@@ -399,7 +399,27 @@ canvas.addEventListener(
       }
     }
 
+    // if (gameState.screen === "PLAYING") {
+    //   if (
+    //     touchX > canvas.width / 2 - 20 &&
+    //     touchX < canvas.width / 2 + 20 &&
+    //     touchY > 5 &&
+    //     touchY < 27
+    //   ) {
+    //     gameState.isPaused = !gameState.isPaused;
+    //     return;
+    //   }
+    //   if (touchX < canvas.width / 2) {
+    //     player.x -= player.speed * 3;
+    //     if (player.x < 100) player.x = 100;
+    //   } else {
+    //     player.x += player.speed * 3;
+    //     if (player.x > 220) player.x = 220;
+    //   }
+    // }
+
     if (gameState.screen === "PLAYING") {
+      // Pause button check FIRST
       if (
         touchX > canvas.width / 2 - 20 &&
         touchX < canvas.width / 2 + 20 &&
@@ -409,12 +429,15 @@ canvas.addEventListener(
         gameState.isPaused = !gameState.isPaused;
         return;
       }
-      if (touchX < canvas.width / 2) {
-        player.x -= player.speed * 3;
-        if (player.x < 100) player.x = 100;
-      } else {
-        player.x += player.speed * 3;
-        if (player.x > 220) player.x = 220;
+
+      if (!gameState.isPaused) {
+        if (touchX < canvas.width / 2) {
+          player.x -= player.speed * 3;
+          if (player.x < 100) player.x = 100;
+        } else {
+          player.x += player.speed * 3;
+          if (player.x > 220) player.x = 220;
+        }
       }
     }
 
@@ -482,6 +505,7 @@ function connectToServer() {
 
     if (data.type === "opponentGameOver") {
       opponentPlayer = null;
+      isMultiplayer = false; // ← stop sending position
       console.log("Opponent lost!");
     }
 
