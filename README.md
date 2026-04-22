@@ -1,16 +1,16 @@
-# 🚗 Car Crash Traffic Racer 2D
+#  Car Crash Traffic Racer 2D
 
 A fast-paced 2D top-down web-based traffic racing game built with HTML5 Canvas and JavaScript.
 
-## 🎮 Play Now
+##  Play Now
 
 👉 **[Play the Game](https://willowy-beignet-8c8b76.netlify.app)**
 
-## 📖 About
+##  About
 
 Car Crash Traffic Racer 2D is a browser-based endless runner game where the player controls a red car navigating a 3-lane highway filled with oncoming traffic. Survive as long as possible and beat your high score!
 
-## ✨ Features
+##  Features
 
 - Smooth top-down 2D gameplay
 - Infinite scrolling road with 3 lanes
@@ -22,14 +22,14 @@ Car Crash Traffic Racer 2D is a browser-based endless runner game where the play
 - Real-time multiplayer via WebSocket
 - Custom 2D car sprites
 
-## 🕹️ Controls
+##  Controls
 
 | Platform | Move Left     | Move Right     | Pause            |
 | -------- | ------------- | -------------- | ---------------- |
 | Desktop  | ← Arrow or A  | → Arrow or D   | Pause button     |
 | Mobile   | Tap left side | Tap right side | Tap pause button |
 
-## 🚀 How to Run Locally
+##  How to Run Locally
 
 1. Clone the repository:
    git clone https://github.com/Noor-Riyadh/CarCrashProject.git
@@ -38,7 +38,7 @@ Car Crash Traffic Racer 2D is a browser-based endless runner game where the play
 4. Select **Open with Live Server**
 5. Game opens in browser ✅
 
-## 🌐 Multiplayer Setup
+##  Multiplayer Setup
 
 1. Navigate to server folder: `cd server`
 2. Install dependencies: `npm install`
@@ -46,7 +46,7 @@ Car Crash Traffic Racer 2D is a browser-based endless runner game where the play
 4. Open game in two different browsers
 5. Click **MULTIPLAYER** in both → play together!
 
-## 🏗️ Project Structure
+##  Project Structure
 
 ```
 CarCrashProject/
@@ -62,7 +62,7 @@ CarCrashProject/
 └── README.md
 ```
 
-## 🛠️ Technology Stack
+##  Technology Stack
 
 | Technology       | Purpose                      |
 | ---------------- | ---------------------------- |
@@ -75,7 +75,7 @@ CarCrashProject/
 | Netlify          | Game deployment              |
 | Git + GitHub     | Version control              |
 
-## 🎁 Bonus Features Implemented
+##  Bonus Features Implemented
 
 - Custom 2D sprite art 
 - Custom 3D models 
@@ -83,7 +83,7 @@ CarCrashProject/
 - Same-platform multiplayer (two devices)
 - Cross-platform multiplayer (Android vs Windows)
 
-## 👥 Team
+##  Team
 
 | Member       | Role                | Contribution                                          |
 | ------------ | ------------------- | ----------------------------------------------------- |
@@ -92,11 +92,11 @@ CarCrashProject/
 | Manar Azzam  | UI & Physics        | Collision detection, score system, UI screens         |
 | Hala Mohamed | 3D Artist           | 3D car models in Blender                              |
 
-## 📚 Course
+##  Course
 
 Computer Graphics — Spring 2026
 Faculty of Computer Science
 
-## 📄 License
+##  License
 
 This project was created for educational purposes as part of a university course project.
