@@ -48,17 +48,19 @@ Car Crash Traffic Racer 2D is a browser-based endless runner game where the play
 
 ## 🏗️ Project Structure
 
+```
 CarCrashProject/
 ├── client/
-│ ├── assets/ # Car sprites (PNG)
-│ ├── game.js # Main game engine
-│ ├── road.js # Road scrolling & traffic
-│ ├── collision.js # Collision detection & score
-│ ├── index.html # Entry point
-│ └── style.css # Styling & mobile scaling
+│   ├── assets/          # Car sprites (PNG)
+│   ├── game.js          # Main game engine
+│   ├── road.js          # Road scrolling & traffic
+│   ├── collision.js     # Collision detection & score
+│   ├── index.html       # Entry point
+│   └── style.css        # Styling & mobile scaling
 ├── server/
-│ └── server.js # WebSocket multiplayer server
+│   └── server.js        # WebSocket multiplayer server
 └── README.md
+```
 
 ## 🛠️ Technology Stack
 
