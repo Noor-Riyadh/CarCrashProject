@@ -16,12 +16,12 @@ let isMultiplayer = false;
 
 // ── Game State ──
 const gameState = {
-    screen: "MENU",    // which screen is showing right now
-    speed: 3,          // how fast everything moves
-    score: 0,          // current score
-    bestScore: 0,      // highest score ever
-    isPaused: false,   // is game paused?
-    isOver: false      // did player crash?
+  screen: "MENU", // which screen is showing right now
+  speed: 3, // how fast everything moves
+  score: 0, // current score
+  bestScore: 0, // highest score ever
+  isPaused: false, // is game paused?
+  isOver: false, // did player crash?
 };
 
 // ── Player ──
@@ -85,16 +85,32 @@ function checkAllEnemies(enemies, player) {
   }
 }
 
+// function handleGameOver() {
+//   if (!gameState.isOver) {
+//     gameState.isOver = true;
+//     gameState.screen = "GAMEOVER";
+//     saveBestScore();
+//     if (socket && socket.readyState === WebSocket.OPEN) {
+//       socket.send(JSON.stringify({ type: "gameOver" }));
+//     }
+//   }
+// }
 function handleGameOver() {
-  if (!gameState.isOver) {
-    gameState.isOver = true;
-    gameState.screen = "GAMEOVER";
-    saveBestScore();
-    if (socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({ type: "gameOver" }));
+    if (!gameState.isOver) {
+        gameState.isOver = true;
+        gameState.screen = "GAMEOVER";
+        saveBestScore();
+
+        
+        if (socket && socket.readyState === WebSocket.OPEN) {
+            socket.send(JSON.stringify({
+                type: "gameOver"
+            }));
+            console.log("Sent gameOver to server"); // Testing 
+        }
     }
-  }
 }
+
 
 // ── Draw ──
 function draw() {
@@ -450,8 +466,13 @@ function connectToServer() {
 
     if (data.type === "connected") {
       myPlayerId = data.id;
+      // if (data.id === "player2") {
+      //   player.x = 120;
+      // }
       if (data.id === "player2") {
-        player.x = 120;
+        player.x = 120; // player 2 starts left lane
+      } else {
+        player.x = 230; // player 1 starts right lane
       }
     }
 
@@ -461,6 +482,7 @@ function connectToServer() {
 
     if (data.type === "opponentGameOver") {
       opponentPlayer = null;
+      console.log("Opponent lost!");
     }
 
     if (data.type === "playerCount") {
