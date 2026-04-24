@@ -10,7 +10,6 @@ export function drawRoad(ctx, canvas) {
 
   ctx.fillStyle = sandColor;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-
   ctx.fillStyle = roadColor;
   ctx.fillRect(roadX, 0, roadWidth, canvas.height);
 
@@ -18,7 +17,6 @@ export function drawRoad(ctx, canvas) {
   ctx.lineWidth = 5;
   ctx.setLineDash([30, 30]);
   ctx.lineDashOffset = -roadY;
-
   ctx.beginPath();
   ctx.moveTo(canvas.width / 2, 0);
   ctx.lineTo(canvas.width / 2, canvas.height);
@@ -27,24 +25,46 @@ export function drawRoad(ctx, canvas) {
 
 export function updateRoad(speed, canvasHeight) {
   roadY += speed;
-  if (roadY >= canvasHeight) {
-    roadY = 0;
-  }
+  if (roadY >= canvasHeight) roadY = 0;
 }
 
-export function spawnTraffic(canvas) {
+//  The new  Updates 
+export function spawnTraffic(canvas, speed) {
   spawnTimer++;
 
-  if (spawnTimer >= 90) {
-    const lanes = [110, 195, 280];
-    const randomX = lanes[Math.floor(Math.random() * lanes.length)];
+   // To add more traffic cars in max speed
+  const spawnRate = Math.max(20, 80 - speed * 6);
 
+  if (spawnTimer >= spawnRate) {
+   const lanes = [110, 195, 280];
+
+
+  
+    const spawnDouble = speed > 6 && Math.random() < 0.4;
+
+   
+    const lane1 = Math.floor(Math.random() * lanes.length);
     trafficVehicles.push({
-      x: randomX,
-      y: -100,
+      x: lanes[lane1],
+      y: -110,
       width: 60,
       height: 110,
     });
+
+    if (spawnDouble) {
+      // To  make the two cars in different wayes 
+      let lane2 = Math.floor(Math.random() * lanes.length);
+      //To make sure the cars in differnt lines 
+      if (lane2 === lane1) lane2 = (lane1 + 1) % lanes.length;
+
+      trafficVehicles.push({
+        x: lanes[lane2],
+        y: -110,      
+        width: 60,
+        height: 110,
+      });
+    }
+
     spawnTimer = 0;
   }
 }
@@ -58,7 +78,6 @@ export function drawTraffic(ctx, enemyCarImage) {
 export function updateTraffic(speed, canvasHeight) {
   for (let i = trafficVehicles.length - 1; i >= 0; i--) {
     trafficVehicles[i].y += speed;
-
     if (trafficVehicles[i].y > canvasHeight) {
       trafficVehicles.splice(i, 1);
     }

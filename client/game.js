@@ -291,7 +291,7 @@ function update() {
   if (gameState.isPaused) return;
   if (gameState.screen === "PLAYING") {
     updateRoad(gameState.speed, canvas.height);
-    spawnTraffic(canvas);
+    spawnTraffic(canvas, gameState.speed);
     updateTraffic(gameState.speed, canvas.height);
     increaseScore();
     checkAllEnemies(trafficVehicles, player);
