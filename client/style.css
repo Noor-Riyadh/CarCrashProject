@@ -15,9 +15,20 @@ body {
 
 canvas {
     display: block;
-    /* Fill the whole phone screen */
-    width: 100vmin;
-    height: 100vmin;
+    width: 100vw;
+    height: 100vh;
+  
     max-width: 400px;
     max-height: 700px;
+   
+    margin: auto;
+}
+
+@media (max-width: 480px) {
+    canvas {
+        width: 100vw;
+        height: 100svh;    
+        max-width: 100vw;
+        max-height: 100svh;
+    }
 }
