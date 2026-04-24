@@ -85,29 +85,30 @@ function checkAllEnemies(enemies, player) {
   }
 }
 
-// function handleGameOver() {
-//   if (!gameState.isOver) {
-//     gameState.isOver = true;
-//     gameState.screen = "GAMEOVER";
-//     saveBestScore();
-//     if (socket && socket.readyState === WebSocket.OPEN) {
-//       socket.send(JSON.stringify({ type: "gameOver" }));
-//     }
-//   }
-// }
 function handleGameOver() {
   if (!gameState.isOver) {
     gameState.isOver = true;
     gameState.screen = "GAMEOVER";
     saveBestScore();
-
     if (socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(
-        JSON.stringify({
-          type: "gameOver",
-        }),
-      );
-      console.log("Sent gameOver to server"); // Testing
+      socket.send(JSON.stringify({ type: "gameOver" }));
+    }
+  }
+}
+function checkOpponentCollision() {
+  if (!isMultiplayer || !opponentPlayer) return;
+  const opponentHitbox = {
+    x: opponentPlayer.x,
+    y: opponentPlayer.y,
+    width: player.width,
+    height: player.height,
+  };
+  for (let i = 0; i < trafficVehicles.length; i++) {
+    if (checkCollision(opponentHitbox, trafficVehicles[i])) {
+      opponentPlayer.crashed = true;
+      break;
+    } else {
+      opponentPlayer.crashed = false;
     }
   }
 }
@@ -194,7 +195,7 @@ function drawGame() {
 
   // Draw opponent
   if (isMultiplayer && opponentPlayer) {
-    ctx.globalAlpha = 0.8;
+    ctx.globalAlpha = opponentPlayer.crashed ? 0.3 : 0.8;
     ctx.drawImage(
       assets.enemyCar,
       opponentPlayer.x,
@@ -203,16 +204,17 @@ function drawGame() {
       player.height,
     );
     ctx.globalAlpha = 1.0;
-    ctx.fillStyle = "#00FF88";
+    ctx.fillStyle = opponentPlayer.crashed ? "#FF4444" : "#00FF88";
     ctx.font = "12px Arial";
     ctx.textAlign = "center";
     ctx.fillText(
-      "P2: " + (opponentPlayer.score || 0),
+      opponentPlayer.crashed
+        ? "P2: CRASHED"
+        : "P2: " + (opponentPlayer.score || 0),
       opponentPlayer.x + 25,
       opponentPlayer.y - 5,
     );
   }
-
   // Paused overlay
   if (gameState.isPaused) {
     ctx.fillStyle = "rgba(0,0,0,0.6)";
@@ -285,7 +287,6 @@ function drawGameOver() {
   ctx.fillText("MAIN MENU", canvas.width / 2, 463);
 }
 
-// ── Update ──
 function update() {
   if (gameState.isPaused) return;
   if (gameState.screen === "PLAYING") {
@@ -294,6 +295,7 @@ function update() {
     updateTraffic(gameState.speed, canvas.height);
     increaseScore();
     checkAllEnemies(trafficVehicles, player);
+    checkOpponentCollision();
     sendPositionToServer();
   }
 }
@@ -399,27 +401,7 @@ canvas.addEventListener(
       }
     }
 
-    // if (gameState.screen === "PLAYING") {
-    //   if (
-    //     touchX > canvas.width / 2 - 20 &&
-    //     touchX < canvas.width / 2 + 20 &&
-    //     touchY > 5 &&
-    //     touchY < 27
-    //   ) {
-    //     gameState.isPaused = !gameState.isPaused;
-    //     return;
-    //   }
-    //   if (touchX < canvas.width / 2) {
-    //     player.x -= player.speed * 3;
-    //     if (player.x < 100) player.x = 100;
-    //   } else {
-    //     player.x += player.speed * 3;
-    //     if (player.x > 220) player.x = 220;
-    //   }
-    // }
-
     if (gameState.screen === "PLAYING") {
-      // Pause button check FIRST
       if (
         touchX > canvas.width / 2 - 20 &&
         touchX < canvas.width / 2 + 20 &&
@@ -429,15 +411,12 @@ canvas.addEventListener(
         gameState.isPaused = !gameState.isPaused;
         return;
       }
-
-      if (!gameState.isPaused) {
-        if (touchX < canvas.width / 2) {
-          player.x -= player.speed * 3;
-          if (player.x < 100) player.x = 100;
-        } else {
-          player.x += player.speed * 3;
-          if (player.x > 220) player.x = 220;
-        }
+      if (touchX < canvas.width / 2) {
+        player.x -= player.speed * 3;
+        if (player.x < 100) player.x = 100;
+      } else {
+        player.x += player.speed * 3;
+        if (player.x > 220) player.x = 220;
       }
     }
 
@@ -483,19 +462,15 @@ function connectToServer() {
     console.log("Connected to server!");
     isMultiplayer = true;
   };
-
   socket.onmessage = function (event) {
     const data = JSON.parse(event.data);
 
     if (data.type === "connected") {
       myPlayerId = data.id;
-      // if (data.id === "player2") {
-      //   player.x = 120;
-      // }
-      if (data.id === "player2") {
-        player.x = 120; // player 2 starts left lane
-      } else {
-        player.x = 230; // player 1 starts right lane
+      if (data.id === "player1") {
+        player.x = 230;
+      } else if (data.id === "player2") {
+        player.x = 120;
       }
     }
 
@@ -505,7 +480,7 @@ function connectToServer() {
 
     if (data.type === "opponentGameOver") {
       opponentPlayer = null;
-      isMultiplayer = false; // ← stop sending position
+      isMultiplayer = false;
       console.log("Opponent lost!");
     }
 
