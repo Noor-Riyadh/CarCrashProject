@@ -4,7 +4,7 @@ A fast-paced 2D top-down web-based traffic racing game built with HTML5 Canvas a
 
 ## Play Now
 
-👉 **[Play the Game](https://car-crash-project-25dp6a3zg-noor-riyadhs-projects.vercel.app/)**
+👉 **[Play the Game](https://car-crash-project.vercel.app/)**
 
 ## About
 
