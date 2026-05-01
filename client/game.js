@@ -35,11 +35,18 @@ const player = {
 
 // ── Assets ──
 const assets = {};
+const USE_3D = false; // true = 3D cars, false = 2D cars
+
 function loadAssets() {
   assets.playerCar = new Image();
-  assets.playerCar.src = "./assets/player_car.png";
+  assets.playerCar.src = USE_3D
+    ? "./assets/player_car_3D.png"
+    : "./assets/player_car.png";
+
   assets.enemyCar = new Image();
-  assets.enemyCar.src = "./assets/enemy_car.png";
+  assets.enemyCar.src = USE_3D
+    ? "./assets/enemy_car_3D.png"
+    : "./assets/enemy_car.png";
 }
 
 // ── Canvas ──
